@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selamat Ulang Tahun!</title>
+<style>
+  :root{
+    --bg:#1b1340; --bg2:#2a1b63; --text:#fff7e6;
+    --cream:#fff1d6; --pink:#ff6fa5; --mint:#5ce1c6; --gold:#ffd35a;
+  }
+  *{box-sizing:border-box}
+  html{margin:0;height:100%}
+  body{margin:0;min-height:100%}
+  body > *{flex-shrink:0}
+  body{
+    background:radial-gradient(ellipse at 50% 0%,var(--bg2),var(--bg) 70%);
+    color:var(--text);
+    font-family:"Trebuchet MS","Segoe UI",sans-serif;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:24px;overflow-x:hidden;
+  }
+  canvas{position:fixed;inset:0;pointer-events:none;z-index:5}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(2rem,8vw,3.4rem);margin:0 0 6px;line-height:1.15}
+  .sub{margin:0 0 28px;font-size:1.05rem;opacity:.85;max-width:34ch}
+
+  /* Kue */
+  .cake{position:relative;flex-shrink:0;width:240px;height:210px;margin:0 auto 22px;cursor:pointer;border:0;background:none;padding:0}
+  .candles{position:absolute;top:0;left:0;right:0;display:flex;justify-content:center;gap:34px}
+  .candle{position:relative;width:12px;height:52px;background:repeating-linear-gradient(135deg,var(--mint) 0 8px,#fff 8px 16px);border-radius:3px;margin-top:34px}
+  .flame{position:absolute;left:50%;top:-26px;width:14px;height:24px;margin-left:-7px;
+    background:radial-gradient(circle at 50% 70%,#fff6c4,var(--gold) 55%,#ff9b3d);
+    border-radius:50% 50% 50% 50%/70% 70% 30% 30%;transform-origin:50% 100%;
+    animation:flicker .45s infinite alternate;transition:opacity .25s,transform .25s}
+  .out .flame{opacity:0;transform:scale(.2);animation:none}
+  .smoke{position:absolute;left:50%;top:-30px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#cfc8ee;opacity:0}
+  .out .smoke{animation:smoke 1.4s ease-out}
+  .top{position:absolute;left:30px;right:30px;top:86px;height:40px;background:var(--cream);border-radius:14px 14px 4px 4px}
+  .top::after{content:"";position:absolute;left:0;right:0;top:20px;height:20px;
+    background:radial-gradient(circle at 12px 0,var(--pink) 12px,transparent 13px) 0 0/34px 20px repeat-x}
+  .base{position:absolute;left:10px;right:10px;top:120px;height:70px;background:var(--pink);border-radius:6px 6px 14px 14px}
+  .base::before{content:"";position:absolute;left:0;right:0;top:26px;height:10px;background:var(--cream);opacity:.9}
+  .plate{position:absolute;left:-14px;right:-14px;bottom:0;height:20px;background:#e9e3ff;border-radius:50%/100% 100% 0 0}
+
+  button.pill{font:inherit;font-size:1rem;padding:12px 26px;border:0;border-radius:999px;background:var(--gold);color:#3b2a00;cursor:pointer;margin:6px}
+  button:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+
+  .pesan{max-width:36ch;margin:22px auto 0;font-size:1.1rem;line-height:1.6;opacity:0;transform:translateY(12px);transition:opacity .8s,transform .8s}
+  .out ~ .pesan, .show{opacity:1;transform:none}
+
+  @keyframes flicker{from{transform:scale(1,1) rotate(-3deg)}to{transform:scale(.9,1.1) rotate(3deg)}}
+  @keyframes smoke{0%{opacity:.7;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-50px) scale(4)}}
+  @media (prefers-reduced-motion:reduce){.flame,.out .smoke{animation:none}.pesan{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+
+<h1 id="judul"></h1>
+<p class="sub" id="sub"></p>
+
+<div id="kue" class="cake" role="button" tabindex="0" aria-label="Tiup lilin">
+  <div class="candles">
+    <div class="candle"><div class="flame"></div><div class="smoke"></div></div>
+    <div class="candle"><div class="flame"></div><div class="smoke"></div></div>
+    <div class="candle"><div class="flame"></div><div class="smoke"></div></div>
+  </div>
+  <div class="top"></div><div class="base"></div><div class="plate"></div>
+</div>
+
+<div>
+  <button class="pill" id="tiup">Tiup lilin</button>
+</div>
+
+<p class="pesan" id="pesan"></p>
+
+<script>
+/* ====== UBAH BAGIAN INI SAJA ====== */
+var PESAN = "Semoga panjang umur, sehat selalu, dan semua impianmu tahun ini tercapai. Terima kasih sudah jadi teman yang luar biasa!";
+/* ================================== */
+
+document.getElementById("judul").textContent = "Selamat Ulang Tahun!";
+document.getElementById("sub").textContent = "Buat permohonan dulu, lalu tiup lilinnya.";
+document.getElementById("pesan").textContent = PESAN;
+
+var kue = document.getElementById("kue"), pesan = document.getElementById("pesan");
+
+function tiup(){
+  if(kue.classList.contains("out")) return;
+  kue.classList.add("out");
+  pesan.classList.add("show");
+  document.getElementById("tiup").textContent = "Selamat!";
+  meledak();
+}
+kue.addEventListener("click", tiup);
+kue.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); tiup(); }});
+document.getElementById("tiup").addEventListener("click", tiup);
+
+/* Konfeti */
+var cv = document.getElementById("confetti"), ctx = cv.getContext("2d"), parts = [], jalan = false;
+function ukuran(){ cv.width = innerWidth; cv.height = innerHeight; }
+ukuran(); addEventListener("resize", ukuran);
+function meledak(){
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  var warna = ["#ffd35a","#ff6fa5","#5ce1c6","#ffffff","#9d8cff"];
+  for(var i=0;i<160;i++){
+    parts.push({x:innerWidth/2,y:innerHeight*0.45,
+      vx:(Math.random()-.5)*14,vy:-Math.random()*13-3,
+      s:Math.random()*7+4,r:Math.random()*6,vr:(Math.random()-.5)*.4,
+      c:warna[i%warna.length],life:0});
+  }
+  if(!jalan){ jalan = true; requestAnimationFrame(gambar); }
+}
+function gambar(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  parts = parts.filter(function(p){ return p.y < cv.height+20 && p.life < 260; });
+  parts.forEach(function(p){
+    p.vy += .28; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life++;
+    ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+    ctx.fillStyle = p.c; ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); ctx.restore();
+  });
+  if(parts.length) requestAnimationFrame(gambar); else jalan = false;
+}
+</script>
+</body>
+</html>
